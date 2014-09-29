@@ -162,13 +162,15 @@
         // recover wrapper if it's somehow was removed (e.g. after ajax call)
         recover = function () {
             for (var i = 0; i < state.length; i++) {
-                var obj = state[i];
+                var obj = state[i],
+                    $divTarget = $(obj.divTarget);
                 if (obj.mode != MODE_UNWRAPPED) {
                     if (!document.getElementById('stickybar-' + obj.divTarget)) {
                         $(".stickyClose",$divTarget.parent()).remove();
                         if ($divTarget.parent().attr('class') === 'sticky')
                             $divTarget.unwrap();
                         obj.mode = MODE_UNWRAPPED;
+                        scroller();
                     }
                 }
             }
