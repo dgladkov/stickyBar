@@ -44,7 +44,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-(function($){
+(function ($) {
     var defaults = {
         divBounds:           true,  // define a DOM element wich limit both top and bottom position. If true, defaults to divTarget parent.
         showClose:           false, // show a close button to disable this behavior
@@ -61,23 +61,12 @@
         MODE_MOVED = 2,
         MODE_DISABLED = 3,
 
-        scroller = function() {
+        scroller = function () {
             for (var i = 0; i < state.length; i++) {
                 var obj = state[i],
                     $divTarget = $(obj.divTarget),
                     $divTargetBase = $(obj.divTargetBase),
                     $divBounds = $(obj.divBounds);
-
-                // recover wrapper if it's somehow was removed (e.g. after ajax call)
-                if (obj.mode != MODE_UNWRAPPED) {
-                    if (!document.getElementById('stickybar-' + obj.divTarget)) {
-                        $(".stickyClose",$divTarget.parent()).remove();
-                        console.log('unwrap');
-                        if ($divTarget.parent().attr('class') === 'sticky')
-                            $divTarget.unwrap();
-                        obj.mode = MODE_UNWRAPPED;
-                    }
-                }
 
                 if(obj.mode == MODE_DISABLED){
                     return;
@@ -168,13 +157,28 @@
                     obj.mode = MODE_UNWRAPPED;
                 }
             }
+        },
 
-    };
+        // recover wrapper if it's somehow was removed (e.g. after ajax call)
+        recover = function () {
+            for (var i = 0; i < state.length; i++) {
+                var obj = state[i];
+                if (obj.mode != MODE_UNWRAPPED) {
+                    if (!document.getElementById('stickybar-' + obj.divTarget)) {
+                        $(".stickyClose",$divTarget.parent()).remove();
+                        if ($divTarget.parent().attr('class') === 'sticky')
+                            $divTarget.unwrap();
+                        obj.mode = MODE_UNWRAPPED;
+                    }
+                }
+            }
+        };
 
-    // register scroller
+    // register handlers
     $(window).scroll(scroller);
+    $(document).ajaxComplete(recover);
 
-    $.fn.stickyBar = function(options) {
+    $.fn.stickyBar = function (options) {
         var settings = $.extend(defaults, options),
             divBounds = (settings.divBounds === true) ? divTargetBase = $(this).parent() : divTargetBase = settings.divBounds,
             divTargetBase = (settings.divBase) ? divTargetBase = settings.divBase : (divBounds? divTargetBase=divBounds : divTargetBase = this);
@@ -194,7 +198,7 @@
     $.fn.unstick = function() {
         for (var i = 0; i < state.length; i++) {
             var removeIdx = -1;
-            if (state[i] == this) {
+            if ($(state[i])[0] == this) {
                 removeIdx = i;
             }
 
